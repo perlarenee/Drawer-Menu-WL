@@ -1,94 +1,211 @@
-=== Drawer Menu WL ===
-Contributors: wl
-Tags: drawer, menu, navigation, hamburger, divi, responsive, mobile
-Requires at least: 5.0
-Tested up to: 6.4
-Requires PHP: 7.4
-Stable tag: 1.0.0
-License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
+# Drawer Menu WL
 
-A beautiful, reusable off-canvas drawer menu with widget areas that works with any WordPress theme.
+A beautiful, reusable off-canvas drawer menu plugin for WordPress with full customization options and Divi Theme Builder compatibility.
 
-== Description ==
+![Version](https://img.shields.io/badge/version-1.2.2-blue.svg)
+![WordPress](https://img.shields.io/badge/wordpress-5.0%2B-blue.svg)
+![PHP](https://img.shields.io/badge/php-7.4%2B-purple.svg)
+![License](https://img.shields.io/badge/license-GPL--2.0-green.svg)
 
-Drawer Menu WL provides a sleek, animated off-canvas drawer menu that's perfect for any WordPress theme, especially Divi. Features include:
+## Features
 
-* **Smooth off-canvas animation** - Slides in from the right with beautiful transitions
-* **Widget areas** - Add content to the top and bottom of your menu
-* **Smart positioning** - Automatically adjusts for admin bars and fixed headers
-* **Customizable colors** - Change colors via shortcode parameters
-* **Mobile responsive** - Adapts to different screen sizes
-* **Easy integration** - Simple shortcode implementation
-* **Divi compatible** - Works perfectly with Divi Theme Builder
-* **Click outside to close** - Enhanced user experience
-* **Escape key support** - Close menu with keyboard
+- ✨ **Smooth off-canvas animation** - Slides in from left or right with beautiful transitions
+- 🎨 **Fully customizable** - Colors, opacity, width, animation speed, and positioning
+- 📱 **Mobile responsive** - Adapts perfectly to all screen sizes
+- 🔧 **Widget areas** - Add custom content to top and bottom of menu
+- 🎯 **Standalone hamburger** - Place hamburger icons anywhere with full styling control
+- 🔗 **Custom triggers** - Use any element to open the drawer
+- 📋 **Menu integration** - Use shortcodes directly in WordPress menus
+- ⌨️ **Keyboard support** - Close with ESC key
+- 🖱️ **Click outside to close** - Enhanced user experience
+- 🎨 **Divi compatible** - Works perfectly with Divi Theme Builder
 
-== Installation ==
+## Installation
 
-1. Upload the `drawer-menu-wl` folder to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Go to Appearance → Menus and assign a menu to the "Drawer Menu WL" location
-4. Add the shortcode [drawer_menu] to your theme
+1. Download or clone this repository
+2. Upload the `drawer-menu-wl` folder to `/wp-content/plugins/`
+3. Activate the plugin through the 'Plugins' menu in WordPress
+4. Go to **Appearance → Menus** and assign a menu to "Drawer Menu WL" location
+5. Add the shortcode `[drawer_menu]` to your theme
 
-== Usage ==
+## Shortcode Documentation
 
-**Basic usage:**
-`[drawer_menu]`
+### Main Drawer Menu: `[drawer_menu]`
 
-**With custom colors:**
-`[drawer_menu background_color="#ff6b35" text_color="#ffffff" hamburger_color="#fff"]`
+#### Basic Usage
+```
+[drawer_menu]
+```
 
-**Setup steps:**
-1. Create or assign a menu to "Drawer Menu WL" location
-2. Optionally add widgets to "Drawer Menu Top" and "Drawer Menu Bottom" widget areas
-3. Add the shortcode to your Divi Theme Builder header template or anywhere else
+#### All Options
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `show_hamburger` | `true` | Show default hamburger icon |
+| `background_color` | `#1184F0` | Menu background color |
+| `background_opacity` | `0.95` | Background opacity (0-1) |
+| `text_color` | `#FEFEFE` | Menu text color |
+| `hamburger_color` | `#fff` | Hamburger icon color |
+| `hamburger_position` | `right` | Position (left or right) |
+| `drawer_width_desktop` | `45vw` | Width on desktop |
+| `drawer_width_mobile` | `100vw` | Width on mobile |
+| `animation_speed` | `0.45s` | Animation duration |
 
-== Features ==
+#### Examples
 
-* Off-canvas drawer animation
-* Customizable colors via shortcode
-* Widget areas for additional content
-* Smart header detection and positioning
-* Mobile and desktop responsive
-* Works with Divi fixed headers
-* Click outside and ESC key to close
+**Hide default hamburger (use custom trigger):**
+```
+[drawer_menu show_hamburger="false"]
+```
 
-== Frequently Asked Questions ==
+**Custom colors:**
+```
+[drawer_menu background_color="#2c3e50" text_color="#ecf0f1" hamburger_color="#e74c3c"]
+```
 
-= How do I change the menu colors? =
-Use the shortcode parameters: `[drawer_menu background_color="#your-color" text_color="#your-color"]`
+**Slide from left:**
+```
+[drawer_menu hamburger_position="left"]
+```
 
-= Does it work with Divi Theme Builder? =
-Yes! Add the shortcode to a Code Module in your Theme Builder header template.
+**Complete customization:**
+```
+[drawer_menu 
+    show_hamburger="true" 
+    background_color="#2c3e50" 
+    background_opacity="0.98" 
+    text_color="#ecf0f1" 
+    hamburger_color="#e74c3c" 
+    hamburger_position="right" 
+    drawer_width_desktop="60vw" 
+    drawer_width_mobile="90vw" 
+    animation_speed="0.3s"
+]
+```
 
-= Can I add content above and below the menu? =
-Yes! Use the "Drawer Menu Top" and "Drawer Menu Bottom" widget areas.
+### Standalone Hamburger: `[drawer_hamburger]`
 
-== Changelog ==
+Place an animated hamburger icon anywhere that controls the drawer menu.
 
-= 1.2.1 =
-* Added shortcode support in WordPress menu items
-* Can now use [drawer_hamburger] directly in menu navigation labels
-* Documentation updated with menu usage instructions
+#### All Options
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `position` | `relative` | CSS position (fixed, relative, absolute, sticky) |
+| `top` | - | Top position |
+| `right` | - | Right position |
+| `left` | - | Left position |
+| `bottom` | - | Bottom position |
+| `color` | `#333` | Icon color when closed |
+| `color_open` | `#fff` | Icon color when open |
+| `size` | `40px` | Icon size |
+| `padding` | `10px` | Padding around icon |
+| `margin` | `0` | Margin |
+| `z_index` | `9999` | Z-index |
+| `show_text` | `false` | Show menu/close text labels |
 
-= 1.2.0 =
-* Added standalone [drawer_hamburger] shortcode for flexible placement
-* Full positioning control (fixed, relative, absolute, sticky)
-* Customizable hamburger styling (color, size, padding, margin)
-* Optional menu/close text labels
-* Added body class 'drawer-menu-open' when drawer is active
-* Toggle functionality - clicking hamburger now closes menu if open
+#### Examples
 
-= 1.1.0 =
-* Added custom trigger support - use any element with class 'drawer-menu-trigger' to open menu
-* Added 'show_hamburger' option to hide default hamburger and only show as close button
-* Improved click outside detection to exclude custom triggers
-* Enhanced flexibility for custom implementations
+**Inline with custom styling:**
+```
+[drawer_hamburger color="#333" size="30px" padding="10px" margin="0 15px 0 0"]
+```
 
-= 1.0.0 =
-* Initial release
-* Off-canvas drawer menu with animations
-* Widget area support
-* Divi Theme Builder compatibility
-* Smart header positioning
+**Fixed position top-right:**
+```
+[drawer_hamburger position="fixed" top="20px" right="20px" color="#fff" color_open="#000"]
+```
+
+**With text labels:**
+```
+[drawer_hamburger show_text="true"]
+```
+
+### Custom Triggers
+
+Use any element as a trigger by adding the `drawer-menu-trigger` class:
+
+```html
+[drawer_menu show_hamburger="false"]
+
+<button class="drawer-menu-trigger">Open Menu</button>
+<span class="drawer-menu-trigger">☰</span>
+<div class="drawer-menu-trigger">Custom Icon</div>
+```
+
+### WordPress Menu Integration
+
+1. Go to **Appearance → Menus**
+2. Add a **Custom Link**
+3. In "Navigation Label" field, enter: `[drawer_hamburger]`
+4. Leave URL as `#` or remove it
+5. Save menu
+
+**With custom styling:**
+```
+[drawer_hamburger color="#333" size="25px"]
+```
+
+## Widget Areas
+
+The plugin provides two widget areas:
+
+- **Drawer Menu Top** - Content at the top of the drawer
+- **Drawer Menu Bottom** - Content at the bottom of the drawer
+
+Add widgets at **Appearance → Widgets**
+
+## Use Cases
+
+- **Theme Builder header** with inline hamburger
+- **Fixed hamburger icon** in corner of screen
+- **Custom menu button** that opens drawer
+- **Multiple trigger points** throughout site
+- **Inline menu item** within WordPress navigation
+
+## Changelog
+
+### 1.2.2
+- Fixed z-index issue with standalone hamburger when drawer is open
+- Standalone hamburger now hides behind drawer panel when menu is active
+- Comprehensive shortcode examples added to documentation
+
+### 1.2.1
+- Added shortcode support in WordPress menu items
+- Can now use [drawer_hamburger] directly in menu navigation labels
+- Documentation updated with menu usage instructions
+
+### 1.2.0
+- Added standalone [drawer_hamburger] shortcode for flexible placement
+- Full positioning control (fixed, relative, absolute, sticky)
+- Customizable hamburger styling (color, size, padding, margin)
+- Optional menu/close text labels
+- Added body class 'drawer-menu-open' when drawer is active
+- Toggle functionality - clicking hamburger now closes menu if open
+
+### 1.1.0
+- Added custom trigger support - use any element with class 'drawer-menu-trigger'
+- Added 'show_hamburger' option to hide default hamburger
+- Improved click outside detection to exclude custom triggers
+- Enhanced flexibility for custom implementations
+
+### 1.0.0
+- Initial release
+- Off-canvas drawer menu with animations
+- Widget area support
+- Divi Theme Builder compatibility
+
+## Requirements
+
+- WordPress 5.0 or higher
+- PHP 7.4 or higher
+
+## License
+
+GPL v2 or later
+
+## Author
+
+WL
+
+## Support
+
+For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/yourusername/drawer-menu-wl)
