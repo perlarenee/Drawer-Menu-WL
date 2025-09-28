@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Drawer Menu WL
- * Plugin URI: https://weblocomotive.com
+ * Plugin URI: https://github.com/perlarenee/Drawer-Menu-WL
  * Description: A reusable off-canvas drawer menu with widget areas that works with any WordPress theme, especially Divi.
  * Version: 1.2.2
  * Author: Web Locomotive
