@@ -29,10 +29,10 @@ Drawer Menu WL creates stunning off-canvas drawer menus that slide smoothly from
 
 = Two Powerful Shortcodes =
 
-**Main Drawer Menu:**
+**Main Drawer Menu:** (Only one per page allowed)
 `[drawer_menu]`
 
-**Standalone Hamburger Icon:**
+**Standalone Hamburger Icon:** (Multiple instances allowed)
 `[drawer_hamburger]`
 
 = Use Cases =
@@ -97,6 +97,10 @@ Use the standalone hamburger shortcode with positioning:
 
 Absolutely! The plugin was designed with Divi Theme Builder in mind and works perfectly with it.
 
+= Can I use multiple drawer menus on the same page? =
+
+No, only one `[drawer_menu]` shortcode per page is allowed to prevent conflicts. However, you can use multiple `[drawer_hamburger]` shortcodes to create multiple trigger points for the same drawer.
+
 == Screenshots ==
 
 1. Drawer menu open with custom content and navigation
@@ -114,6 +118,7 @@ Absolutely! The plugin was designed with Divi Theme Builder in mind and works pe
 * Added proper readme.txt file
 * Improved accessibility with ARIA labels
 * Added uninstall cleanup
+* Limited to one drawer menu per page to prevent conflicts
 
 = 1.2.1 =
 * Added shortcode support in WordPress menu items
@@ -150,4 +155,8 @@ Major feature update! New standalone hamburger shortcode with full positioning c
 
 == Support ==
 
-For support, feature requests, or bug reports, please visit our support forum or contact us through our website.
+For support, feature requests, or bug reports:
+
+* Visit the [WordPress.org support forum](https://wordpress.org/support/plugin/drawer-menu-wl/)
+* Check the [GitHub repository](https://github.com/perlarenee/Drawer-Menu-WL) for documentation and issues
+* Contact Web Locomotive through our website at [weblocomotive.com](https://weblocomotive.com)

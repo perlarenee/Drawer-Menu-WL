@@ -22,15 +22,24 @@ A beautiful, reusable off-canvas drawer menu plugin for WordPress with full cust
 
 ## Installation
 
+### From GitHub
 1. Download or clone this repository
 2. Upload the `drawer-menu-wl` folder to `/wp-content/plugins/`
 3. Activate the plugin through the 'Plugins' menu in WordPress
 4. Go to **Appearance → Menus** and assign a menu to "Drawer Menu WL" location
 5. Add the shortcode `[drawer_menu]` to your theme
 
+### From WordPress Repository
+1. Go to **Plugins → Add New** in your WordPress admin
+2. Search for "Drawer Menu WL"
+3. Click **Install Now** and then **Activate**
+4. Follow steps 4-5 above
+
 ## Shortcode Documentation
 
 ### Main Drawer Menu: `[drawer_menu]`
+
+**Note:** Only one `[drawer_menu]` per page is allowed to prevent conflicts.
 
 #### Basic Usage
 ```
@@ -166,7 +175,11 @@ Add widgets at **Appearance → Widgets**
 ### 1.2.2
 - Fixed z-index issue with standalone hamburger when drawer is open
 - Standalone hamburger now hides behind drawer panel when menu is active
-- Comprehensive shortcode examples added to documentation
+- Enhanced security and WordPress coding standards compliance
+- Added proper readme.txt file
+- Improved accessibility with ARIA labels
+- Added uninstall cleanup
+- Limited to one drawer menu per page to prevent conflicts
 
 ### 1.2.1
 - Added shortcode support in WordPress menu items
@@ -206,6 +219,19 @@ GPL v2 or later
 
 Web Locomotive
 
-## Support
+## Development & Support
 
-For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/yourusername/drawer-menu-wl)
+- **GitHub Repository:** [Drawer-Menu-WL](https://github.com/perlarenee/Drawer-Menu-WL)
+- **Issues & Bug Reports:** [GitHub Issues](https://github.com/perlarenee/Drawer-Menu-WL/issues)
+- **WordPress Plugin Directory:** [Drawer Menu WL](https://wordpress.org/plugins/drawer-menu-wl/)
+- **Author:** [Web Locomotive](https://weblocomotive.com)
+
+## Contributing
+
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+Please follow WordPress coding standards and include appropriate documentation.
