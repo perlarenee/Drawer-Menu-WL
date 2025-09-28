@@ -37,6 +37,14 @@ define( 'DRAWER_MENU_WL_BASENAME', plugin_basename( __FILE__ ) );
 class DrawerMenuWL {
 
 	/**
+	 * Flag to track if drawer menu has been rendered
+	 *
+	 * @since 1.2.2
+	 * @var bool
+	 */
+	private static $drawer_menu_rendered = false;
+
+	/**
 	 * Constructor - Set up hooks and filters
 	 *
 	 * @since 1.0.0
@@ -151,6 +159,14 @@ class DrawerMenuWL {
 	 * @return string HTML output.
 	 */
 	public function drawer_menu_shortcode( $atts ) {
+		// Check if drawer menu has already been rendered
+		if ( self::$drawer_menu_rendered ) {
+			return '<!-- Drawer Menu WL: Only one drawer menu per page is allowed -->';
+		}
+
+		// Mark as rendered
+		self::$drawer_menu_rendered = true;
+
 		$atts = shortcode_atts(
 			array(
 				'menu_location'       => 'drawer-menu-wl',
