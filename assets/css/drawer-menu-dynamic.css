@@ -1,0 +1,83 @@
+/* Dynamic CSS Template for Drawer Menu WL
+ * This file contains template styles that will be customized via wp_add_inline_style()
+ * Variables are replaced in PHP: {{BACKGROUND_COLOR}}, {{TEXT_COLOR}}, etc.
+ */
+
+.drawer-menu-instance {
+    --drawer-bg-color: {{BACKGROUND_COLOR}};
+    --drawer-text-color: {{TEXT_COLOR}};
+    --drawer-hamburger-color: {{HAMBURGER_COLOR}};
+    --drawer-contrast-color: {{CONTRAST_COLOR}};
+    --drawer-bg-rgba: {{BACKGROUND_RGBA}};
+    --drawer-width-desktop: {{DRAWER_WIDTH_DESKTOP}};
+    --drawer-width-mobile: {{DRAWER_WIDTH_MOBILE}};
+    --drawer-animation-speed: {{ANIMATION_SPEED}};
+}
+
+/* Drawer positioning and styling */
+#offcanvas-mobile-nav .drawer-list {
+    background-color: var(--drawer-bg-rgba) !important;
+    {{DRAWER_SIDE}}: 0;
+    transform: {{DRAWER_TRANSFORM}};
+    {{DRAWER_RADIUS}}: 100vw;
+    transition: width 0.475s ease-out, transform var(--drawer-animation-speed) ease, border-radius 0.8s 0.1s ease;
+}
+
+/* Desktop width */
+@media (min-width: 768px) {
+    #offcanvas-mobile-nav .drawer-list {
+        width: var(--drawer-width-desktop);
+    }
+}
+
+/* Mobile width */
+@media (max-width: 767px) {
+    #offcanvas-mobile-nav .drawer-list {
+        width: var(--drawer-width-mobile);
+    }
+}
+
+/* Menu open state */
+#offcanvas-mobile-nav input.hamburger:checked ~ .drawer-list {
+    transform: translateX(0);
+    {{DRAWER_RADIUS}}: 0;
+}
+
+/* Hamburger positioning */
+#offcanvas-mobile-nav label.hamburger {
+    {{HAMBURGER_SIDE}};
+}
+
+/* Hamburger colors */
+#offcanvas-mobile-nav label.hamburger i,
+#offcanvas-mobile-nav label.hamburger i:before,
+#offcanvas-mobile-nav label.hamburger i:after {
+    background-color: var(--drawer-hamburger-color);
+}
+
+#offcanvas-mobile-nav label.hamburger text open {
+    color: var(--drawer-hamburger-color);
+}
+
+/* Open state colors */
+#offcanvas-mobile-nav input.hamburger:checked ~ label.hamburger i:before,
+#offcanvas-mobile-nav input.hamburger:checked ~ label.hamburger i:after {
+    background-color: var(--drawer-text-color);
+}
+
+#offcanvas-mobile-nav input.hamburger:checked ~ label.hamburger text close {
+    color: var(--drawer-text-color);
+}
+
+/* Hidden hamburger when drawer is closed */
+#offcanvas-mobile-nav.drawer-hidden-trigger label.hamburger {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* Show hamburger as close button when menu is open */
+#offcanvas-mobile-nav.drawer-hidden-trigger input.hamburger:checked ~ label.hamburger {
+    opacity: 1;
+    pointer-events: auto;
+}

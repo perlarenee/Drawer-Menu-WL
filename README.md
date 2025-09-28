@@ -204,7 +204,7 @@ GPL v2 or later
 
 ## Author
 
-WL
+Web Locomotive
 
 ## Support
 
