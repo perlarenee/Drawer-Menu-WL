@@ -3,7 +3,7 @@
  * Plugin Name: Drawer Menu WL
  * Plugin URI: https://github.com/perlarenee/Drawer-Menu-WL
  * Description: A reusable off-canvas drawer menu with widget areas that works with any WordPress theme, especially Divi.
- * Version: 1.2.2
+ * Version: 1.3.0
  * Author: Web Locomotive
  * Author URI: https://weblocomotive.com
  * License: GPL v2 or later
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'DRAWER_MENU_WL_VERSION', '1.2.2' );
+define( 'DRAWER_MENU_WL_VERSION', '1.3.0' );
 define( 'DRAWER_MENU_WL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'DRAWER_MENU_WL_URL', plugin_dir_url( __FILE__ ) );
 define( 'DRAWER_MENU_WL_BASENAME', plugin_basename( __FILE__ ) );
@@ -37,14 +37,6 @@ define( 'DRAWER_MENU_WL_BASENAME', plugin_basename( __FILE__ ) );
 class DrawerMenuWL {
 
 	/**
-	 * Flag to track if drawer menu has been rendered
-	 *
-	 * @since 1.2.2
-	 * @var bool
-	 */
-	private static $drawer_menu_rendered = false;
-
-	/**
 	 * Constructor - Set up hooks and filters
 	 *
 	 * @since 1.0.0
@@ -53,6 +45,9 @@ class DrawerMenuWL {
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'widgets_init', array( $this, 'register_widgets' ) );
+
+		// Auto-output drawer menu on all pages
+		add_action( 'wp_footer', array( $this, 'output_drawer_menu' ), 1 );
 
 		// Enable shortcodes in menu items.
 		add_filter( 'wp_nav_menu_items', array( $this, 'do_shortcode_in_menus' ), 10, 2 );
@@ -64,6 +59,8 @@ class DrawerMenuWL {
 
 		// Admin hooks.
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
+		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 	}
     
 	/**
@@ -76,11 +73,7 @@ class DrawerMenuWL {
 		$this->register_menu_location();
 
 		// Register shortcodes.
-		add_shortcode( 'drawer_menu', array( $this, 'drawer_menu_shortcode' ) );
 		add_shortcode( 'drawer_hamburger', array( $this, 'drawer_hamburger_shortcode' ) );
-
-		// Note: load_plugin_textdomain() is no longer needed for WordPress.org hosted plugins.
-		// WordPress automatically loads translations when needed.
 	}
 
 	/**
@@ -150,51 +143,65 @@ class DrawerMenuWL {
 			true
 		);
 	}
-    
+
 	/**
-	 * Drawer menu shortcode
+	 * Enqueue admin scripts
 	 *
-	 * @since 1.0.0
-	 * @param array $atts Shortcode attributes.
-	 * @return string HTML output.
+	 * @since 1.3.0
 	 */
-	public function drawer_menu_shortcode( $atts ) {
-		// Check if drawer menu has already been rendered
-		if ( self::$drawer_menu_rendered ) {
-			return '<!-- Drawer Menu WL: Only one drawer menu per page is allowed -->';
+	public function admin_enqueue_scripts( $hook ) {
+		if ( 'settings_page_drawer-menu-wl' !== $hook ) {
+			return;
 		}
 
-		// Mark as rendered
-		self::$drawer_menu_rendered = true;
+		wp_enqueue_style( 'wp-color-picker' );
+		wp_enqueue_script( 'wp-color-picker' );
+		
+		wp_add_inline_script( 'wp-color-picker', '
+			jQuery(document).ready(function($) {
+				$(".color-picker").wpColorPicker();
+			});
+		' );
+	}
 
-		$atts = shortcode_atts(
-			array(
-				'menu_location'       => 'drawer-menu-wl',
-				'show_hamburger'      => 'true',
-				'background_color'    => '#1184F0',
-				'background_opacity'  => '0.95',
-				'text_color'          => '#FEFEFE',
-				'hamburger_color'     => '#fff',
-				'hamburger_position'  => 'right',
-				'drawer_width_desktop' => '45vw',
-				'drawer_width_mobile' => '100vw',
-				'animation_speed'     => '0.45s',
-			),
-			$atts,
-			'drawer_menu'
+	/**
+	 * Output drawer menu automatically in footer
+	 *
+	 * @since 1.3.0
+	 */
+	public function output_drawer_menu() {
+		// Get options from settings
+		$options = get_option( 'drawer_menu_wl_options', $this->get_default_options() );
+		
+		// Don't output if explicitly disabled
+		if ( empty( $options['enabled'] ) ) {
+			return;
+		}
+		
+		// Render the drawer menu
+		$this->render_drawer_menu( $options );
+	}
+
+	/**
+	 * Get default options
+	 *
+	 * @since 1.3.0
+	 * @return array
+	 */
+	private function get_default_options() {
+		return array(
+			'enabled'              => true,
+			'menu_location'        => 'drawer-menu-wl',
+			'show_hamburger'       => true,
+			'background_color'     => '#1184F0',
+			'background_opacity'   => '0.95',
+			'text_color'           => '#FEFEFE',
+			'hamburger_color'      => '#fff',
+			'hamburger_position'   => 'right',
+			'drawer_width_desktop' => '45vw',
+			'drawer_width_mobile'  => '100vw',
+			'animation_speed'      => '0.45s',
 		);
-
-		// Sanitize attributes.
-		$atts = $this->sanitize_shortcode_attributes( $atts );
-
-
-		// Start output buffering.
-		ob_start();
-
-		// Include template with custom settings.
-		$this->render_drawer_menu( $atts );
-
-		return ob_get_clean();
 	}
     
 	/**
@@ -389,15 +396,17 @@ class DrawerMenuWL {
 	 * @param array $args Sanitized shortcode arguments.
 	 */
 	private function render_drawer_menu( $args = array() ) {
+		// Merge with defaults
+		$args = wp_parse_args( $args, $this->get_default_options() );
 
-		// Extract sanitized values (these should all be set since they come from sanitization).
+		// Extract sanitized values
 		$menu_location = $args['menu_location'];
 		$show_hamburger = $args['show_hamburger'];
 
-		// Add class for hidden hamburger.
-		$drawer_class = ( 'false' === $show_hamburger ) ? 'drawer-hidden-trigger' : '';
+		// Add class for hidden hamburger
+		$drawer_class = empty( $show_hamburger ) ? 'drawer-hidden-trigger' : '';
 
-		// Ensure the base stylesheet is enqueued before adding inline styles.
+		// Ensure the base stylesheet is enqueued
 		if ( ! wp_style_is( 'drawer-menu-wl-css', 'enqueued' ) ) {
 			wp_enqueue_style(
 				'drawer-menu-wl-css',
@@ -407,14 +416,13 @@ class DrawerMenuWL {
 			);
 		}
 
-		// Generate dynamic CSS with sanitized values.
+		// Generate dynamic CSS
 		$dynamic_css = $this->generate_dynamic_css( $args );
 
+		// Output CSS
+		echo '<style type="text/css">' . wp_strip_all_tags( $dynamic_css ) . '</style>';
 
-		// Output CSS directly since wp_add_inline_style may have timing issues.
-		echo '<style type="text/css">' . esc_html( wp_strip_all_tags( $dynamic_css ) ) . '</style>';
-
-		// Load template.
+		// Load template
 		include DRAWER_MENU_WL_PATH . 'templates/drawer-menu.php';
 	}
     
@@ -426,8 +434,7 @@ class DrawerMenuWL {
 	 * @return string Generated CSS.
 	 */
 	private function generate_dynamic_css( $args ) {
-
-		// Use sanitized values directly.
+		// Use values from args
 		$background_color = $args['background_color'];
 		$background_opacity = $args['background_opacity'];
 		$text_color = $args['text_color'];
@@ -437,18 +444,17 @@ class DrawerMenuWL {
 		$drawer_width_mobile = $args['drawer_width_mobile'];
 		$animation_speed = $args['animation_speed'];
 
-
-		// Convert hex to rgba for background.
+		// Convert hex to rgba for background
 		$bg_rgb = $this->hex_to_rgb( $background_color );
 		$background_rgba = "rgba({$bg_rgb['r']}, {$bg_rgb['g']}, {$bg_rgb['b']}, {$background_opacity})";
 
-		// Determine positioning.
+		// Determine positioning
 		$hamburger_side = ( 'left' === $hamburger_position ) ? 'left: 10%' : 'right: 10%';
 		$drawer_side = ( 'left' === $hamburger_position ) ? 'left' : 'right';
 		$drawer_transform = ( 'left' === $hamburger_position ) ? 'translateX(-100vw)' : 'translateX(100vw)';
 		$drawer_radius = ( 'left' === $hamburger_position ) ? 'border-bottom-right-radius' : 'border-bottom-left-radius';
 
-		// Generate CSS.
+		// Generate CSS
 		$css = "
 			#offcanvas-mobile-nav .drawer-list {
 				background-color: {$background_rgba} !important;
@@ -514,47 +520,6 @@ class DrawerMenuWL {
 	}
 
 	/**
-	 * Sanitize shortcode attributes for drawer menu
-	 *
-	 * @since 1.2.2
-	 * @param array $atts Raw shortcode attributes.
-	 * @return array Sanitized attributes.
-	 */
-	private function sanitize_shortcode_attributes( $atts ) {
-		$sanitized = array();
-
-		// Sanitize menu location - allow hyphens for menu slugs.
-		$sanitized['menu_location'] = sanitize_text_field( $atts['menu_location'] );
-
-		// Sanitize boolean show_hamburger.
-		$sanitized['show_hamburger'] = in_array( $atts['show_hamburger'], array( 'true', 'false' ), true ) ? $atts['show_hamburger'] : 'true';
-
-		// Sanitize colors (hex values) - fix the logic.
-		$bg_color = sanitize_hex_color( $atts['background_color'] );
-		$sanitized['background_color'] = $bg_color ? $bg_color : '#1184F0';
-
-		$text_color = sanitize_hex_color( $atts['text_color'] );
-		$sanitized['text_color'] = $text_color ? $text_color : '#FEFEFE';
-
-		$hamburger_color = sanitize_hex_color( $atts['hamburger_color'] );
-		$sanitized['hamburger_color'] = $hamburger_color ? $hamburger_color : '#fff';
-
-		// Sanitize opacity (0-1).
-		$opacity = floatval( $atts['background_opacity'] );
-		$sanitized['background_opacity'] = ( $opacity >= 0 && $opacity <= 1 ) ? $opacity : 0.95;
-
-		// Sanitize position.
-		$sanitized['hamburger_position'] = in_array( $atts['hamburger_position'], array( 'left', 'right' ), true ) ? $atts['hamburger_position'] : 'right';
-
-		// Sanitize CSS values.
-		$sanitized['drawer_width_desktop'] = $this->sanitize_css_value( $atts['drawer_width_desktop'], '45vw' );
-		$sanitized['drawer_width_mobile'] = $this->sanitize_css_value( $atts['drawer_width_mobile'], '100vw' );
-		$sanitized['animation_speed'] = $this->sanitize_css_value( $atts['animation_speed'], '0.45s' );
-
-		return $sanitized;
-	}
-
-	/**
 	 * Sanitize hamburger shortcode attributes
 	 *
 	 * @since 1.2.2
@@ -564,32 +529,32 @@ class DrawerMenuWL {
 	private function sanitize_hamburger_attributes( $atts ) {
 		$sanitized = array();
 
-		// Sanitize position.
+		// Sanitize position
 		$valid_positions = array( 'relative', 'absolute', 'fixed', 'sticky' );
 		$sanitized['position'] = in_array( $atts['position'], $valid_positions, true ) ? $atts['position'] : 'relative';
 
-		// Sanitize positioning values.
+		// Sanitize positioning values
 		$sanitized['top'] = $this->sanitize_css_value( $atts['top'], '' );
 		$sanitized['right'] = $this->sanitize_css_value( $atts['right'], '' );
 		$sanitized['left'] = $this->sanitize_css_value( $atts['left'], '' );
 		$sanitized['bottom'] = $this->sanitize_css_value( $atts['bottom'], '' );
 
-		// Sanitize colors.
+		// Sanitize colors
 		$color = sanitize_hex_color( $atts['color'] );
 		$sanitized['color'] = $color ? $color : '#333';
 
 		$color_open = sanitize_hex_color( $atts['color_open'] );
 		$sanitized['color_open'] = $color_open ? $color_open : '#fff';
 
-		// Sanitize size and spacing.
+		// Sanitize size and spacing
 		$sanitized['size'] = $this->sanitize_css_value( $atts['size'], '40px' );
 		$sanitized['padding'] = $this->sanitize_css_value( $atts['padding'], '10px' );
 		$sanitized['margin'] = $this->sanitize_css_value( $atts['margin'], '0' );
 
-		// Sanitize z-index.
+		// Sanitize z-index
 		$sanitized['z_index'] = absint( $atts['z_index'] ) ? absint( $atts['z_index'] ) : 9999;
 
-		// Sanitize boolean show_text.
+		// Sanitize boolean show_text
 		$sanitized['show_text'] = in_array( $atts['show_text'], array( 'true', 'false' ), true ) ? $atts['show_text'] : 'false';
 
 		return $sanitized;
@@ -604,17 +569,17 @@ class DrawerMenuWL {
 	 * @return string Sanitized CSS value.
 	 */
 	private function sanitize_css_value( $value, $default = '' ) {
-		// Allow common CSS units and values - improved regex for better decimal support.
+		// Allow common CSS units and values
 		if ( preg_match( '/^[0-9]*\.?[0-9]+(px|em|rem|%|vh|vw|vmin|vmax|s|ms)$/', $value ) ) {
 			return $value;
 		}
 
-		// Allow 'auto', 'inherit', 'initial', 'none', '0'.
+		// Allow 'auto', 'inherit', 'initial', 'none', '0'
 		if ( in_array( $value, array( 'auto', 'inherit', 'initial', 'none', '0' ), true ) ) {
 			return $value;
 		}
 
-		// Allow simple numbers (for things like z-index).
+		// Allow simple numbers
 		if ( is_numeric( $value ) ) {
 			return $value;
 		}
@@ -647,30 +612,235 @@ class DrawerMenuWL {
 	}
 
 	/**
-	 * Darken a hex color
+	 * Register plugin settings
 	 *
-	 * @since 1.0.0
-	 * @param string $hex Hex color value.
-	 * @param int    $percent Percentage to darken.
-	 * @return string Darkened hex color.
+	 * @since 1.3.0
 	 */
-	private function darken_color( $hex, $percent ) {
-		$hex = str_replace( '#', '', $hex );
-		if ( 6 !== strlen( $hex ) ) {
-			return $hex; // Invalid hex.
-		}
+	public function register_settings() {
+		register_setting(
+			'drawer_menu_wl_options',
+			'drawer_menu_wl_options',
+			array( $this, 'sanitize_options' )
+		);
 
-		$r = hexdec( substr( $hex, 0, 2 ) );
-		$g = hexdec( substr( $hex, 2, 2 ) );
-		$b = hexdec( substr( $hex, 4, 2 ) );
+		// General Settings Section
+		add_settings_section(
+			'drawer_menu_general',
+			__( 'General Settings', 'drawer-menu-wl' ),
+			array( $this, 'general_section_callback' ),
+			'drawer-menu-wl'
+		);
 
-		$r = max( 0, min( 255, $r - ( $r * $percent / 100 ) ) );
-		$g = max( 0, min( 255, $g - ( $g * $percent / 100 ) ) );
-		$b = max( 0, min( 255, $b - ( $b * $percent / 100 ) ) );
+		add_settings_field(
+			'enabled',
+			__( 'Enable Drawer Menu', 'drawer-menu-wl' ),
+			array( $this, 'checkbox_field' ),
+			'drawer-menu-wl',
+			'drawer_menu_general',
+			array( 'field' => 'enabled', 'label' => __( 'Display drawer menu on site', 'drawer-menu-wl' ) )
+		);
 
-		return '#' . str_pad( dechex( $r ), 2, '0', STR_PAD_LEFT )
-				  . str_pad( dechex( $g ), 2, '0', STR_PAD_LEFT )
-				  . str_pad( dechex( $b ), 2, '0', STR_PAD_LEFT );
+		add_settings_field(
+			'show_hamburger',
+			__( 'Show Default Hamburger', 'drawer-menu-wl' ),
+			array( $this, 'checkbox_field' ),
+			'drawer-menu-wl',
+			'drawer_menu_general',
+			array( 'field' => 'show_hamburger', 'label' => __( 'Display built-in hamburger icon', 'drawer-menu-wl' ) )
+		);
+
+		add_settings_field(
+			'hamburger_position',
+			__( 'Hamburger Position', 'drawer-menu-wl' ),
+			array( $this, 'select_field' ),
+			'drawer-menu-wl',
+			'drawer_menu_general',
+			array(
+				'field' => 'hamburger_position',
+				'options' => array(
+					'left'  => __( 'Left', 'drawer-menu-wl' ),
+					'right' => __( 'Right', 'drawer-menu-wl' ),
+				),
+			)
+		);
+
+		// Appearance Section
+		add_settings_section(
+			'drawer_menu_appearance',
+			__( 'Appearance Settings', 'drawer-menu-wl' ),
+			array( $this, 'appearance_section_callback' ),
+			'drawer-menu-wl'
+		);
+
+		add_settings_field(
+			'background_color',
+			__( 'Background Color', 'drawer-menu-wl' ),
+			array( $this, 'color_field' ),
+			'drawer-menu-wl',
+			'drawer_menu_appearance',
+			array( 'field' => 'background_color' )
+		);
+
+		add_settings_field(
+			'background_opacity',
+			__( 'Background Opacity', 'drawer-menu-wl' ),
+			array( $this, 'text_field' ),
+			'drawer-menu-wl',
+			'drawer_menu_appearance',
+			array( 'field' => 'background_opacity', 'description' => __( 'Value between 0 and 1 (e.g., 0.95)', 'drawer-menu-wl' ) )
+		);
+
+		add_settings_field(
+			'text_color',
+			__( 'Text Color', 'drawer-menu-wl' ),
+			array( $this, 'color_field' ),
+			'drawer-menu-wl',
+			'drawer_menu_appearance',
+			array( 'field' => 'text_color' )
+		);
+
+		add_settings_field(
+			'hamburger_color',
+			__( 'Hamburger Color', 'drawer-menu-wl' ),
+			array( $this, 'color_field' ),
+			'drawer-menu-wl',
+			'drawer_menu_appearance',
+			array( 'field' => 'hamburger_color' )
+		);
+
+		// Advanced Section
+		add_settings_section(
+			'drawer_menu_advanced',
+			__( 'Advanced Settings', 'drawer-menu-wl' ),
+			array( $this, 'advanced_section_callback' ),
+			'drawer-menu-wl'
+		);
+
+		add_settings_field(
+			'drawer_width_desktop',
+			__( 'Drawer Width (Desktop)', 'drawer-menu-wl' ),
+			array( $this, 'text_field' ),
+			'drawer-menu-wl',
+			'drawer_menu_advanced',
+			array( 'field' => 'drawer_width_desktop', 'description' => __( 'e.g., 45vw, 400px', 'drawer-menu-wl' ) )
+		);
+
+		add_settings_field(
+			'drawer_width_mobile',
+			__( 'Drawer Width (Mobile)', 'drawer-menu-wl' ),
+			array( $this, 'text_field' ),
+			'drawer-menu-wl',
+			'drawer_menu_advanced',
+			array( 'field' => 'drawer_width_mobile', 'description' => __( 'e.g., 100vw, 300px', 'drawer-menu-wl' ) )
+		);
+
+		add_settings_field(
+			'animation_speed',
+			__( 'Animation Speed', 'drawer-menu-wl' ),
+			array( $this, 'text_field' ),
+			'drawer-menu-wl',
+			'drawer_menu_advanced',
+			array( 'field' => 'animation_speed', 'description' => __( 'e.g., 0.45s, 300ms', 'drawer-menu-wl' ) )
+		);
+	}
+
+	/**
+	 * Section callbacks
+	 */
+	public function general_section_callback() {
+		echo '<p>' . esc_html__( 'Configure basic drawer menu settings.', 'drawer-menu-wl' ) . '</p>';
+	}
+
+	public function appearance_section_callback() {
+		echo '<p>' . esc_html__( 'Customize the look and feel of your drawer menu.', 'drawer-menu-wl' ) . '</p>';
+	}
+
+	public function advanced_section_callback() {
+		echo '<p>' . esc_html__( 'Advanced configuration options.', 'drawer-menu-wl' ) . '</p>';
+	}
+
+	/**
+	 * Field callbacks
+	 */
+	public function checkbox_field( $args ) {
+		$options = get_option( 'drawer_menu_wl_options', $this->get_default_options() );
+		$field = $args['field'];
+		$checked = isset( $options[ $field ] ) ? $options[ $field ] : false;
+		?>
+		<label>
+			<input type="checkbox" name="drawer_menu_wl_options[<?php echo esc_attr( $field ); ?>]" value="1" <?php checked( $checked, 1 ); ?> />
+			<?php echo esc_html( $args['label'] ); ?>
+		</label>
+		<?php
+	}
+
+	public function select_field( $args ) {
+		$options = get_option( 'drawer_menu_wl_options', $this->get_default_options() );
+		$field = $args['field'];
+		$value = isset( $options[ $field ] ) ? $options[ $field ] : '';
+		?>
+		<select name="drawer_menu_wl_options[<?php echo esc_attr( $field ); ?>]">
+			<?php foreach ( $args['options'] as $key => $label ) : ?>
+				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $value, $key ); ?>>
+					<?php echo esc_html( $label ); ?>
+				</option>
+			<?php endforeach; ?>
+		</select>
+		<?php
+	}
+
+	public function text_field( $args ) {
+		$options = get_option( 'drawer_menu_wl_options', $this->get_default_options() );
+		$field = $args['field'];
+		$value = isset( $options[ $field ] ) ? $options[ $field ] : '';
+		?>
+		<input type="text" name="drawer_menu_wl_options[<?php echo esc_attr( $field ); ?>]" value="<?php echo esc_attr( $value ); ?>" class="regular-text" />
+		<?php if ( isset( $args['description'] ) ) : ?>
+			<p class="description"><?php echo esc_html( $args['description'] ); ?></p>
+		<?php endif; ?>
+		<?php
+	}
+
+	public function color_field( $args ) {
+		$options = get_option( 'drawer_menu_wl_options', $this->get_default_options() );
+		$field = $args['field'];
+		$value = isset( $options[ $field ] ) ? $options[ $field ] : '';
+		?>
+		<input type="text" name="drawer_menu_wl_options[<?php echo esc_attr( $field ); ?>]" value="<?php echo esc_attr( $value ); ?>" class="color-picker" />
+		<?php
+	}
+
+	/**
+	 * Sanitize options
+	 *
+	 * @since 1.3.0
+	 */
+	public function sanitize_options( $input ) {
+		$sanitized = array();
+		$defaults = $this->get_default_options();
+
+		$sanitized['enabled'] = isset( $input['enabled'] ) ? 1 : 0;
+		$sanitized['show_hamburger'] = isset( $input['show_hamburger'] ) ? 1 : 0;
+		$sanitized['menu_location'] = sanitize_text_field( $input['menu_location'] ?? $defaults['menu_location'] );
+		$sanitized['hamburger_position'] = in_array( $input['hamburger_position'] ?? '', array( 'left', 'right' ), true ) 
+			? $input['hamburger_position'] 
+			: $defaults['hamburger_position'];
+
+		// Sanitize colors
+		$sanitized['background_color'] = sanitize_hex_color( $input['background_color'] ?? '' ) ?: $defaults['background_color'];
+		$sanitized['text_color'] = sanitize_hex_color( $input['text_color'] ?? '' ) ?: $defaults['text_color'];
+		$sanitized['hamburger_color'] = sanitize_hex_color( $input['hamburger_color'] ?? '' ) ?: $defaults['hamburger_color'];
+
+		// Sanitize opacity
+		$opacity = floatval( $input['background_opacity'] ?? $defaults['background_opacity'] );
+		$sanitized['background_opacity'] = ( $opacity >= 0 && $opacity <= 1 ) ? $opacity : $defaults['background_opacity'];
+
+		// Sanitize CSS values
+		$sanitized['drawer_width_desktop'] = $this->sanitize_css_value( $input['drawer_width_desktop'] ?? '', $defaults['drawer_width_desktop'] );
+		$sanitized['drawer_width_mobile'] = $this->sanitize_css_value( $input['drawer_width_mobile'] ?? '', $defaults['drawer_width_mobile'] );
+		$sanitized['animation_speed'] = $this->sanitize_css_value( $input['animation_speed'] ?? '', $defaults['animation_speed'] );
+
+		return $sanitized;
 	}
     
 	/**
@@ -696,76 +866,54 @@ class DrawerMenuWL {
 	public function admin_page() {
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Drawer Menu WL', 'drawer-menu-wl' ); ?></h1>
+			<h1><?php esc_html_e( 'Drawer Menu WL Settings', 'drawer-menu-wl' ); ?></h1>
+			
+			<form method="post" action="options.php">
+				<?php
+				settings_fields( 'drawer_menu_wl_options' );
+				do_settings_sections( 'drawer-menu-wl' );
+				submit_button();
+				?>
+			</form>
+
+			<hr>
+
 			<div class="card">
-				<h2><?php esc_html_e( 'How to Use', 'drawer-menu-wl' ); ?></h2>
-				<p><?php esc_html_e( 'Use the shortcodes anywhere in your site:', 'drawer-menu-wl' ); ?></p>
-                
-                <h3><?php esc_html_e('Main Drawer Menu', 'drawer-menu-wl'); ?></h3>
-                <code>[drawer_menu]</code>
-                
-                <h3><?php esc_html_e('Standalone Hamburger Icon', 'drawer-menu-wl'); ?></h3>
-                <code>[drawer_hamburger]</code>
-                <p><?php esc_html_e('Use this to place a hamburger icon anywhere that controls the drawer menu.', 'drawer-menu-wl'); ?></p>
-                
-                <h3><?php esc_html_e('Shortcode Options', 'drawer-menu-wl'); ?></h3>
-                <ul>
-                    <li><code>show_hamburger="true"</code> - <?php esc_html_e('Show default hamburger (false to use custom trigger)', 'drawer-menu-wl'); ?></li>
-                    <li><code>background_color="#1184F0"</code> - <?php esc_html_e('Menu background color', 'drawer-menu-wl'); ?></li>
-                    <li><code>background_opacity="0.95"</code> - <?php esc_html_e('Background opacity (0-1)', 'drawer-menu-wl'); ?></li>
-                    <li><code>text_color="#FEFEFE"</code> - <?php esc_html_e('Menu text color', 'drawer-menu-wl'); ?></li>
-                    <li><code>hamburger_color="#fff"</code> - <?php esc_html_e('Hamburger icon color', 'drawer-menu-wl'); ?></li>
-                    <li><code>hamburger_position="right"</code> - <?php esc_html_e('Position (left or right)', 'drawer-menu-wl'); ?></li>
-                    <li><code>drawer_width_desktop="45vw"</code> - <?php esc_html_e('Width on desktop', 'drawer-menu-wl'); ?></li>
-                    <li><code>drawer_width_mobile="100vw"</code> - <?php esc_html_e('Width on mobile', 'drawer-menu-wl'); ?></li>
-                    <li><code>animation_speed="0.45s"</code> - <?php esc_html_e('Animation duration', 'drawer-menu-wl'); ?></li>
-                </ul>
-                
-                <h3><?php esc_html_e('Using Custom Triggers', 'drawer-menu-wl'); ?></h3>
-                <p><?php esc_html_e('To use your own button/element to open the drawer:', 'drawer-menu-wl'); ?></p>
-                <ol>
-                    <li><?php esc_html_e('Set show_hamburger="false" in the shortcode', 'drawer-menu-wl'); ?></li>
-                    <li><?php esc_html_e('Add class "drawer-menu-trigger" to any element you want to use as a trigger', 'drawer-menu-wl'); ?></li>
-                </ol>
-                <p><strong><?php esc_html_e('Example:', 'drawer-menu-wl'); ?></strong></p>
-                <code>[drawer_menu show_hamburger="false"]</code><br>
-                <code>&lt;button class="drawer-menu-trigger"&gt;Open Menu&lt;/button&gt;</code>
-                
-                <h3><?php esc_html_e('Hamburger Shortcode Options', 'drawer-menu-wl'); ?></h3>
-                <ul>
-                    <li><code>position="relative"</code> - <?php esc_html_e('CSS position (fixed, relative, absolute, sticky)', 'drawer-menu-wl'); ?></li>
-                    <li><code>top="20px"</code> - <?php esc_html_e('Top position', 'drawer-menu-wl'); ?></li>
-                    <li><code>right="20px"</code> - <?php esc_html_e('Right position', 'drawer-menu-wl'); ?></li>
-                    <li><code>left=""</code> - <?php esc_html_e('Left position', 'drawer-menu-wl'); ?></li>
-                    <li><code>bottom=""</code> - <?php esc_html_e('Bottom position', 'drawer-menu-wl'); ?></li>
-                    <li><code>color="#333"</code> - <?php esc_html_e('Icon color when closed', 'drawer-menu-wl'); ?></li>
-                    <li><code>color_open="#fff"</code> - <?php esc_html_e('Icon color when open', 'drawer-menu-wl'); ?></li>
-                    <li><code>size="40px"</code> - <?php esc_html_e('Icon size', 'drawer-menu-wl'); ?></li>
-                    <li><code>padding="10px"</code> - <?php esc_html_e('Padding around icon', 'drawer-menu-wl'); ?></li>
-                    <li><code>margin="0"</code> - <?php esc_html_e('Margin', 'drawer-menu-wl'); ?></li>
-                    <li><code>z_index="9999"</code> - <?php esc_html_e('Z-index', 'drawer-menu-wl'); ?></li>
-                    <li><code>show_text="false"</code> - <?php esc_html_e('Show menu/close text labels', 'drawer-menu-wl'); ?></li>
-                </ul>
-                
-                <h3><?php esc_html_e('Using in WordPress Menus', 'drawer-menu-wl'); ?></h3>
-                <p><?php esc_html_e('You can add the hamburger shortcode directly to menu items:', 'drawer-menu-wl'); ?></p>
-                <ol>
-                    <li><?php esc_html_e('Go to Appearance → Menus', 'drawer-menu-wl'); ?></li>
-                    <li><?php esc_html_e('Add a Custom Link', 'drawer-menu-wl'); ?></li>
-                    <li><?php esc_html_e('In "Navigation Label" field, enter: [drawer_hamburger]', 'drawer-menu-wl'); ?></li>
-                    <li><?php esc_html_e('Leave URL as # or remove it', 'drawer-menu-wl'); ?></li>
-                </ol>
-                
-                <h3><?php esc_html_e('Setup Steps', 'drawer-menu-wl'); ?></h3>
-                <ol>
-                    <li><?php esc_html_e('Go to Appearance → Menus and create/assign a menu to "Drawer Menu WL"', 'drawer-menu-wl'); ?></li>
-                    <li><?php esc_html_e('Add widgets to "Drawer Menu Top" and "Drawer Menu Bottom" areas if needed', 'drawer-menu-wl'); ?></li>
-                    <li><?php esc_html_e('Add [drawer_menu] shortcode to your Divi Theme Builder header or anywhere else', 'drawer-menu-wl'); ?></li>
-                </ol>
-            </div>
-        </div>
-        <?php
-    }
+				<h2><?php esc_html_e( 'Usage', 'drawer-menu-wl' ); ?></h2>
+				<p><?php esc_html_e( 'The drawer menu is automatically added to all pages when enabled above.', 'drawer-menu-wl' ); ?></p>
+				
+				<h3><?php esc_html_e( 'Setup Steps', 'drawer-menu-wl' ); ?></h3>
+				<ol>
+					<li><?php esc_html_e( 'Ensure "Enable Drawer Menu" is checked above', 'drawer-menu-wl' ); ?></li>
+					<li><?php esc_html_e( 'Go to Appearance → Menus and create/assign a menu to "Drawer Menu WL"', 'drawer-menu-wl' ); ?></li>
+					<li><?php esc_html_e( 'Go to Appearance → Widgets and add content to "Drawer Menu Top" and "Drawer Menu Bottom" areas if needed', 'drawer-menu-wl' ); ?></li>
+					<li><?php esc_html_e( 'Customize appearance settings above', 'drawer-menu-wl' ); ?></li>
+				</ol>
+
+				<h3><?php esc_html_e( 'Custom Hamburger Triggers', 'drawer-menu-wl' ); ?></h3>
+				<p><?php esc_html_e( 'To add custom hamburger icons anywhere on your site:', 'drawer-menu-wl' ); ?></p>
+				
+				<h4><?php esc_html_e( 'Using Shortcode', 'drawer-menu-wl' ); ?></h4>
+				<code>[drawer_hamburger]</code>
+				<p><?php esc_html_e( 'Available attributes: position, top, right, left, bottom, color, color_open, size, padding, margin, z_index, show_text', 'drawer-menu-wl' ); ?></p>
+				<p><strong><?php esc_html_e( 'Example:', 'drawer-menu-wl' ); ?></strong></p>
+				<code>[drawer_hamburger position="fixed" top="20px" right="20px" color="#333" color_open="#fff"]</code>
+
+				<h4><?php esc_html_e( 'Using CSS Class', 'drawer-menu-wl' ); ?></h4>
+				<p><?php esc_html_e( 'Add class "drawer-menu-trigger" to any element:', 'drawer-menu-wl' ); ?></p>
+				<code>&lt;button class="drawer-menu-trigger"&gt;Open Menu&lt;/button&gt;</code>
+
+				<h3><?php esc_html_e( 'Using in Divi', 'drawer-menu-wl' ); ?></h3>
+				<p><?php esc_html_e( 'The drawer menu works automatically. To add custom hamburger icons in Divi:', 'drawer-menu-wl' ); ?></p>
+				<ol>
+					<li><?php esc_html_e( 'Add a Code Module or Text Module to your layout', 'drawer-menu-wl' ); ?></li>
+					<li><?php esc_html_e( 'Insert the [drawer_hamburger] shortcode', 'drawer-menu-wl' ); ?></li>
+					<li><?php esc_html_e( 'If using default hamburger, uncheck "Show Default Hamburger" above', 'drawer-menu-wl' ); ?></li>
+				</ol>
+			</div>
+		</div>
+		<?php
+	}
     
 	/**
 	 * Plugin activation
@@ -774,6 +922,12 @@ class DrawerMenuWL {
 	 */
 	public function activate() {
 		$this->register_menu_location();
+		
+		// Set default options if they don't exist
+		if ( false === get_option( 'drawer_menu_wl_options' ) ) {
+			add_option( 'drawer_menu_wl_options', $this->get_default_options() );
+		}
+		
 		flush_rewrite_rules();
 	}
 
