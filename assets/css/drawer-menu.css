@@ -53,9 +53,12 @@
 #offcanvas-mobile-nav .drawer-list li {
   text-transform: uppercase;
   white-space: nowrap;
-  transform: translateX(100vw);
-  transition: transform 1s cubic-bezier(.29,1.4,.44,.96);
+  position: relative;
+  right: -100vw;
+  transition: right 1s cubic-bezier(.29,1.4,.44,.96);
 }
+
+
 
 #offcanvas-mobile-nav .drawer-list li:last-child {
   margin-bottom: 2em;
@@ -93,7 +96,7 @@
 }
 
 #offcanvas-mobile-nav input.hamburger:checked ~ .drawer-list li {
-  transform: translateX(0);
+  right: 0;
 }
 
 #offcanvas-mobile-nav input.hamburger:checked ~ label.hamburger i {
@@ -211,12 +214,13 @@
 .drawer-menu-navigation {
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  padding: 20px 0; /* Control spacing with padding */
 }
 
 .drawer-menu-navigation ul {
   width: 100%;
+  margin: auto 0; /* Center vertically */
 }
 
 .drawer-menu-widgets-bottom {
