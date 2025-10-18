@@ -1,6 +1,6 @@
 /**
  * Drawer Menu WL Plugin JavaScript
- * Enhanced version with accessibility support
+ * Enhanced version with accessibility support and auto-close
  *
  * @package DrawerMenuWL
  * @since 1.0.0
@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const hamburgerLabel = document.querySelector("#offcanvas-mobile-nav label.hamburger");
   const drawerNav = document.querySelector("#offcanvas-mobile-nav");
   const drawerContent = document.querySelector("#offcanvas-mobile-nav .drawer-list");
+  const drawerMenuNav = document.querySelector("#offcanvas-mobile-nav .drawer-menu-navigation");
 
   let focusableElements = [];
   let previousFocus = null;
@@ -194,5 +195,30 @@ document.addEventListener("DOMContentLoaded", function () {
       closeMenu();
     }
   });
+
+  // Close menu when clicking on links inside the drawer menu navigation
+  document.addEventListener('click', function(e) {
+    // Check if menu is open first
+    if (!isMenuOpen()) return;
+    
+    // Check if the clicked element is a link or inside a link
+    const link = e.target.closest('a');
+    
+    // Only proceed if it's a link and it's inside the drawer navigation
+    if (link && drawerNav && drawerNav.contains(link)) {
+      const href = link.getAttribute('href');
+      
+      console.log('Drawer link clicked:', href); // Debug log
+      
+      // Close menu for all links except hash-only links
+      if (href && href !== '#' && !href.startsWith('javascript:')) {
+        // Small delay to ensure click registers
+        setTimeout(function() {
+          console.log('Closing menu...'); // Debug log
+          closeMenu();
+        }, 300);
+      }
+    }
+  }, true); // Use capture phase
 
 });
