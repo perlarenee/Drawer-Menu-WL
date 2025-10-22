@@ -126,7 +126,7 @@
 
 /* Hamburger label */
 #offcanvas-mobile-nav label.hamburger {
-  z-index: 9999;
+  z-index: 999999;
   position: fixed;
   top: 20px;
   right: 10%;
