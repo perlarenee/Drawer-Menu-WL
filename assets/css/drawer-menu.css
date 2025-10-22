@@ -33,7 +33,7 @@
     border-radius 0.8s 0.1s ease;
   border-bottom-left-radius: 100vw;
   background-color: rgba(13, 110, 195, 0.8);
-  z-index: 9998;
+  z-index: 999999;
 }
 
 @media (min-width: 768px) {
@@ -126,7 +126,7 @@
 
 /* Hamburger label */
 #offcanvas-mobile-nav label.hamburger {
-  z-index: 999999;
+  z-index: 9999;
   position: fixed;
   top: 20px;
   right: 10%;
