@@ -221,7 +221,9 @@ class DrawerMenuWL {
 				'bottom'     => '',
 				'color'      => '#333',
 				'color_open' => '#fff',
-				'size'       => '40px',
+				'size'       => '40px',      // Sets both width and height
+				'width'      => '',          // NEW: Override width specifically
+				'height'     => '',          // NEW: Override height specifically
 				'padding'    => '10px',
 				'margin'     => '0',
 				'z_index'    => '9999',
@@ -236,7 +238,7 @@ class DrawerMenuWL {
 
 		// Generate unique ID for this instance.
 		$unique_id = 'drawer-hamburger-' . wp_unique_id();
-        
+		
 		// Build position styles.
 		$position_styles = array();
 		$position_styles[] = 'position: ' . esc_attr( $atts['position'] );
@@ -257,11 +259,13 @@ class DrawerMenuWL {
 		$position_styles[] = 'z-index: ' . esc_attr( $atts['z_index'] );
 		$position_styles[] = 'padding: ' . esc_attr( $atts['padding'] );
 		$position_styles[] = 'margin: ' . esc_attr( $atts['margin'] );
-		$position_styles[] = 'width: ' . esc_attr( $atts['size'] );
-		$position_styles[] = 'height: ' . esc_attr( $atts['size'] );
+		
+		// Use specific width/height if provided, otherwise fall back to size
+		$position_styles[] = 'width: ' . esc_attr( $atts['width'] );
+		$position_styles[] = 'height: ' . esc_attr( $atts['height'] );
 
 		$position_style = implode( '; ', $position_styles );
-        
+		
 		ob_start();
 		?>
 		<style>
@@ -270,90 +274,90 @@ class DrawerMenuWL {
 				cursor: pointer;
 				<?php echo esc_attr( $position_style ); ?>
 			}
-            
-            /* Lower z-index when menu is open so it doesn't show above drawer */
-            body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> {
-                z-index: 1;
-            }
-            
-            .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon {
-                position: relative;
-                width: 100%;
-                height: 2px;
-                background-color: <?php echo esc_attr( $atts['color'] ); ?>;
-                transition: all 0.35s;
-                display: block;
-                top: 50%;
-                transform: translateY(-50%);
-            }
-            
-            .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:before,
-            .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:after {
-                content: "";
-                position: absolute;
-                width: 100%;
-                height: 2px;
-                background-color: <?php echo esc_attr( $atts['color'] ); ?>;
-                left: 0;
-                transition: transform 0.35s;
-                transform-origin: 50% 50%;
-            }
-            
-            .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:before {
-                transform: translateY(-8px);
-            }
-            
-            .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:after {
-                transform: translateY(8px);
-            }
-            
-            /* When menu is open */
-            #offcanvas-mobile-nav input.hamburger:checked ~ * .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon,
-            body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon {
-                background-color: transparent;
-            }
-            
-            #offcanvas-mobile-nav input.hamburger:checked ~ * .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:before,
-            #offcanvas-mobile-nav input.hamburger:checked ~ * .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:after,
-            body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:before,
-            body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:after {
-                background-color: <?php echo esc_attr($atts['color_open']); ?>;
-            }
-            
-            #offcanvas-mobile-nav input.hamburger:checked ~ * .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:before,
-            body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:before {
-                transform: rotate(45deg);
-            }
-            
-            #offcanvas-mobile-nav input.hamburger:checked ~ * .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:after,
-            body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:after {
-                transform: rotate(-45deg);
-            }
-            
-            <?php if ($atts['show_text'] === 'true') : ?>
-            .<?php echo esc_attr( $unique_id ); ?> .hamburger-text {
-                text-transform: uppercase;
-                font-size: 0.8em;
-                text-align: center;
-                display: block;
-                margin-top: 8px;
-                transition: opacity 0.25s;
-            }
-            
-            .<?php echo esc_attr( $unique_id ); ?> .hamburger-text-close {
-                display: none;
-            }
-            
-            body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> .hamburger-text-open {
-                display: none;
-            }
-            
-            body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> .hamburger-text-close {
-                display: block;
-            }
-            <?php endif; ?>
-        </style>
-        
+			
+			/* Lower z-index when menu is open so it doesn't show above drawer */
+			body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> {
+				z-index: 1;
+			}
+			
+			.<?php echo esc_attr( $unique_id ); ?> .hamburger-icon {
+				position: relative;
+				width: 100%;
+				height: 2px;
+				background-color: <?php echo esc_attr( $atts['color'] ); ?>;
+				transition: all 0.35s;
+				display: block;
+				top: 50%;
+				transform: translateY(-50%);
+			}
+			
+			.<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:before,
+			.<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:after {
+				content: "";
+				position: absolute;
+				width: 100%;
+				height: 2px;
+				background-color: <?php echo esc_attr( $atts['color'] ); ?>;
+				left: 0;
+				transition: transform 0.35s;
+				transform-origin: 50% 50%;
+			}
+			
+			.<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:before {
+				transform: translateY(-8px);
+			}
+			
+			.<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:after {
+				transform: translateY(8px);
+			}
+			
+			/* When menu is open */
+			#offcanvas-mobile-nav input.hamburger:checked ~ * .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon,
+			body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon {
+				background-color: transparent;
+			}
+			
+			#offcanvas-mobile-nav input.hamburger:checked ~ * .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:before,
+			#offcanvas-mobile-nav input.hamburger:checked ~ * .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:after,
+			body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:before,
+			body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:after {
+				background-color: <?php echo esc_attr($atts['color_open']); ?>;
+			}
+			
+			#offcanvas-mobile-nav input.hamburger:checked ~ * .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:before,
+			body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:before {
+				transform: rotate(45deg);
+			}
+			
+			#offcanvas-mobile-nav input.hamburger:checked ~ * .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:after,
+			body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> .hamburger-icon:after {
+				transform: rotate(-45deg);
+			}
+			
+			<?php if ($atts['show_text'] === 'true') : ?>
+			.<?php echo esc_attr( $unique_id ); ?> .hamburger-text {
+				text-transform: uppercase;
+				font-size: 0.8em;
+				text-align: center;
+				display: block;
+				margin-top: 8px;
+				transition: opacity 0.25s;
+			}
+			
+			.<?php echo esc_attr( $unique_id ); ?> .hamburger-text-close {
+				display: none;
+			}
+			
+			body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> .hamburger-text-open {
+				display: none;
+			}
+			
+			body.drawer-menu-open .<?php echo esc_attr( $unique_id ); ?> .hamburger-text-close {
+				display: block;
+			}
+			<?php endif; ?>
+		</style>
+		
 		<div class="<?php echo esc_attr( $unique_id ); ?> drawer-menu-trigger">
 			<span class="hamburger-icon"></span>
 			<?php if ( 'true' === $atts['show_text'] ) : ?>
@@ -363,7 +367,7 @@ class DrawerMenuWL {
 		</div>
 		<?php
 		return ob_get_clean();
-    }
+	}
     
 	/**
 	 * Enable shortcodes in nav menu items
@@ -546,8 +550,19 @@ class DrawerMenuWL {
 		$color_open = sanitize_hex_color( $atts['color_open'] );
 		$sanitized['color_open'] = $color_open ? $color_open : '#fff';
 
-		// Sanitize size and spacing
-		$sanitized['size'] = $this->sanitize_css_value( $atts['size'], '40px' );
+		// Sanitize size (fallback for both width and height)
+		$size = $this->sanitize_css_value( $atts['size'], '40px' );
+		
+		// Sanitize width and height - use specific values if provided, otherwise use size
+		$sanitized['width'] = ! empty( $atts['width'] ) 
+			? $this->sanitize_css_value( $atts['width'], $size )
+			: $size;
+			
+		$sanitized['height'] = ! empty( $atts['height'] ) 
+			? $this->sanitize_css_value( $atts['height'], $size )
+			: $size;
+
+		// Sanitize spacing
 		$sanitized['padding'] = $this->sanitize_css_value( $atts['padding'], '10px' );
 		$sanitized['margin'] = $this->sanitize_css_value( $atts['margin'], '0' );
 
@@ -569,11 +584,9 @@ class DrawerMenuWL {
 	 * @return string Sanitized CSS value.
 	 */
 	private function sanitize_css_value( $value, $default = '' ) {
-		// Allow common CSS units and values
-		if ( preg_match( '/^[0-9]*\.?[0-9]+(px|em|rem|%|vh|vw|vmin|vmax|s|ms)$/', $value ) ) {
-			return $value;
-		}
-
+		// Trim whitespace
+		$value = trim( $value );
+		
 		// Allow 'auto', 'inherit', 'initial', 'none', '0'
 		if ( in_array( $value, array( 'auto', 'inherit', 'initial', 'none', '0' ), true ) ) {
 			return $value;
@@ -581,6 +594,17 @@ class DrawerMenuWL {
 
 		// Allow simple numbers
 		if ( is_numeric( $value ) ) {
+			return $value;
+		}
+
+		// Allow single CSS values with units
+		if ( preg_match( '/^[0-9]*\.?[0-9]+(px|em|rem|%|vh|vw|vmin|vmax|s|ms)$/', $value ) ) {
+			return $value;
+		}
+
+		// Allow shorthand values (e.g., "10px 20px", "0 0 0 0", "1em 2em 3em 4em")
+		// This pattern allows 1-4 space-separated values with optional units
+		if ( preg_match( '/^([0-9]+\.?[0-9]*(px|em|rem|%|vh|vw|vmin|vmax)?(\s+|$)){1,4}$/', $value ) ) {
 			return $value;
 		}
 
